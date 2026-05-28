@@ -1,0 +1,37 @@
+# Data + model artifacts (large, machine-local — moved via HF/scp, not git).
+# Leading slash anchors to the repo root so src/himat/data/ is NOT matched.
+/data/
+/checkpoints/
+/outputs/
+/runs/
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+
+# Big / private source files kept out of git.
+# (Inline comments are NOT allowed in .gitignore — keep them on their own lines.)
+# cgf70343.pdf: 64 MB paper PDF, too large + copyrighted
+# himat.txt: scratch text extraction of the PDF
+# deep-research-report.md: do not push (per project owner)
+cgf70343.pdf
+himat.txt
+deep-research-report.md
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Env / secrets
+.env
+*.local
+
+# OS
+Thumbs.db
+.DS_Store

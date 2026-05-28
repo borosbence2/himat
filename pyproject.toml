@@ -1,0 +1,50 @@
+[project]
+name = "himat"
+version = "0.0.1"
+description = "HiMat-lite: text-to-SVBRDF generation at 1024 (prototype reimplementation of HiMat, EG 2026)"
+requires-python = ">=3.10"
+
+# Kept deliberately small (minimal-dependency bias). torch is installed
+# separately per-machine with the right CUDA wheel — see README.
+dependencies = [
+    "einops>=0.7",
+    "safetensors>=0.4",
+    "numpy>=1.24",
+    "pillow>=10.0",
+    "tqdm>=4.66",
+    "pyyaml>=6.0",
+    # HuggingFace stack
+    "diffusers>=0.32",      # Sana (DC-AE + linear DiT) support landed here
+    "transformers>=4.44",   # Gemma-2 text encoder
+    "accelerate>=0.34",
+    "peft>=0.13",           # LoRA on the DiT
+    "datasets>=2.20",       # MatSynth loading from the Hub
+    "huggingface_hub>=0.25",
+]
+
+[project.optional-dependencies]
+# Eval-only deps (P1/P4) — keep out of the core path
+eval = [
+    "lpips>=0.1.4",
+    "torchmetrics>=1.4",
+    "open_clip_torch>=2.24",
+]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+    "tensorboard>=2.17",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
