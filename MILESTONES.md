@@ -4,6 +4,24 @@
 
 End state of the prototype: **a trained model that takes a text prompt and produces a 1024×1024 SVBRDF (albedo, normal, roughness, metallic, height) on a local GPU.** Output quality good enough to drop into `forfun-graphics`' material system for visual evaluation; not yet shipped to end users, not yet distilled, not yet wrapped in C++.
 
+## Progress (updated 2026-05-28)
+
+All authoring-box work for Phases 0–4 is **done** — code written, machine-
+independent logic unit-tested (**63 tests, CI green**: ruff + pytest on every push).
+What remains is everything that needs the dataset or a GPU; it runs on the RTX 4090
+box, tracked as an ordered checklist in **[RUNBOOK_4090.md](RUNBOOK_4090.md)**.
+
+| Phase | Code (authoring box) | Tests | GPU/data work (4090) |
+|---|---|---|---|
+| P0 — skeleton + data pipeline | ✅ done | 25 pass (3 preproc skip locally) | ⏳ download · preprocess · prompts · smoke |
+| P1 — DC-AE decoder adaptation | ✅ done | 8 pass | ⏳ fine-tune decoder vs real weights |
+| P2 — DiT + CrossStitch | ✅ done | 13 pass | ⏳ §4 CONFIRM block + forward-parity smoke |
+| P3 — training loop | ✅ done | 7 pass (loss math) | ⏳ Stage A smoke → Stage B 50k train |
+| P4 — eval + sample gallery | ✅ done | 5 pass (sampler) | ⏳ sample · gallery · CLIPScore |
+| Tooling (CI, conftest, lint) | ✅ done | — | — |
+
+Legend: ✅ complete · ⏳ blocked on the 4090 box (no machine access yet).
+
 ## Non-goals for this prototype
 
 Pushed to follow-up work after the trained model exists:
@@ -71,7 +89,7 @@ The three packed images (M=3) follow the paper §3: scalar r, m, h are concatena
 | Loss | Flow-matching velocity prediction (Sana's loss) + LPIPS for DC-AE | Paper §3 Eq. 2 + Eq. 4 |
 | Prompt enrichment | Local Gemma-2-2B with paper's template (paraphrase MatSynth tags) | Cheap, offline, no Gemini API dep |
 
-## Open decisions (need a call before P3)
+## Open decisions (decide before the 4090 training run; none block code)
 
 - **Compute budget envelope:** how many wall-clock days are we willing to burn on training? Affects whether we target 50 k steps (~1 day on 4090) or 200 k steps (~4 days).
 - **Experiment tracking:** wandb (cloud) vs aim (local) vs tensorboard (local). Default: tensorboard, swap later.
@@ -79,9 +97,9 @@ The three packed images (M=3) follow the paper §3: scalar r, m, h are concatena
 
 ---
 
-## Phase 0 — Project skeleton + data pipeline
+## Phase 0 — Project skeleton + data pipeline  ✅ code · ⏳ 4090
 
-**Status (authoring box): code complete, 22/22 unit tests pass.** Remaining steps
+**Status (authoring box): code complete, unit tests pass.** Remaining steps
 need the dataset + GPU and run on the 4090 box: actually download MatSynth,
 preprocess to the 1024² cache, generate prompts, run `himat.data.smoke`. Before
 the full preprocess, run `python scripts/download_matsynth.py --inspect` to
@@ -150,9 +168,9 @@ height-vs-displacement and where tags live).
 
 ---
 
-## Phase 1 — DC-AE decoder adaptation for SVBRDF
+## Phase 1 — DC-AE decoder adaptation for SVBRDF  ✅ code · ⏳ 4090
 
-**Status (authoring box): code complete, 30/30 unit tests pass.** Built:
+**Status (authoring box): code complete, unit tests pass.** Built:
 `models/dc_ae.py` (SVBRDFAutoencoder — folds the M=3 maps into the AE's batch,
 decoder-only freeze, scaled-latent helpers for P3), `train/losses.py` (L1+LPIPS,
 no GAN), `train/vae_finetune.py` (bf16 + grad-accum loop, periodic val + best-PSNR
@@ -202,7 +220,7 @@ wrapper already falls back to tuple indexing if they differ.
 
 ---
 
-## Phase 2 — Linear-DiT + CrossStitch wiring
+## Phase 2 — Linear-DiT + CrossStitch wiring  ✅ code · ⏳ 4090
 
 **Status (authoring box): code complete, plumbing unit-tested (13 tests).** Built:
 `models/crossstitch.py` (dual-branch module + token routing — shape, identity-at-init,
@@ -258,7 +276,7 @@ step; CrossStitch is a prose-only interpretation to validate by ablation.
 
 ---
 
-## Phase 3 — Training loop
+## Phase 3 — Training loop  ✅ code · ⏳ 4090
 
 **Status (authoring box): code complete; flow-matching math unit-tested (7 tests,
 incl. oracle→zero-loss).** Built: `train/flow_matching.py` (rectified-flow velocity
@@ -309,9 +327,10 @@ models) — runs on the 4090 box per RUNBOOK §5 (Stage A smoke → Stage B main
 
 ---
 
-## Phase 4 — Eval + sample gallery
+## Phase 4 — Eval + sample gallery  ✅ code · ⏳ 4090
 
-**Status (authoring box): code complete (untested — needs the trained model).**
+**Status (authoring box): code complete; sampler unit-tested (5 tests). Eval
+untested — needs the trained model.**
 Built: `inference/pipeline.py` (rectified-flow Euler sampler + CFG, decode_scaled,
 save PNGs), `scripts/sample.py`, `scripts/gallery.py`, `eval/clipscore.py`
 (open_clip; albedo proxy until forfun-graphics rendering is wired). Runs on the
