@@ -88,12 +88,16 @@ MATSYNTH = MatSynthSchema()
 # --------------------------------------------------------------------------- #
 DC_AE_COMPRESSION = 32
 LATENT_RESOLUTION = RESOLUTION // DC_AE_COMPRESSION  # 32
+LATENT_CHANNELS = 32  # DC-AE f32c32: 32x spatial compression, 32 latent channels
 
 
 # --------------------------------------------------------------------------- #
 # Base-model identifiers on the Hub.
 # --------------------------------------------------------------------------- #
 SANA_MODEL_ID = "Efficient-Large-Model/Sana_1600M_1024px_diffusers"
+# Standalone DC-AE (f32c32) used by Sana — same encoder/decoder, easier to load
+# in isolation than fishing it out of the full pipeline.
+DC_AE_MODEL_ID = "mit-han-lab/dc-ae-f32c32-sana-1.0-diffusers"
 GEMMA_MODEL_ID = "google/gemma-2-2b-it"
 MATSYNTH_REPO_ID = "gvecchio/MatSynth"
 

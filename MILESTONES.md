@@ -152,6 +152,18 @@ height-vs-displacement and where tags live).
 
 ## Phase 1 — DC-AE decoder adaptation for SVBRDF
 
+**Status (authoring box): code complete, 30/30 unit tests pass.** Built:
+`models/dc_ae.py` (SVBRDFAutoencoder — folds the M=3 maps into the AE's batch,
+decoder-only freeze, scaled-latent helpers for P3), `train/losses.py` (L1+LPIPS,
+no GAN), `train/vae_finetune.py` (bf16 + grad-accum loop, periodic val + best-PSNR
+checkpoint), `eval/dc_ae_recon.py` (PSNR/SSIM/LPIPS + before/after grid),
+`scripts/train_dc_ae.py`. The fold/unfold + freeze plumbing is verified here
+against a tiny fake DC-AE. **Remaining (4090 box):** `pip install -e ".[eval]"`,
+then `python scripts/train_dc_ae.py` against the real `mit-han-lab/dc-ae-f32c32`
+weights once the 1024² cache exists. First real run should confirm the diffusers
+`AutoencoderDC` encode/decode return-attr names (`.latent` / `.sample`) — the
+wrapper already falls back to tuple indexing if they differ.
+
 **Deliverable:** a fine-tuned DC-AE decoder that reconstructs SVBRDF maps from latents with `rFID` ≤ paper's reported 1.29 (Tab. 2), or at least visibly better than the off-the-shelf Sana DC-AE on normal maps (paper Fig. 3 motivation).
 
 ### Tasks
