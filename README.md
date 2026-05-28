@@ -1,8 +1,12 @@
 # HiMat-lite
 
+![CI](https://github.com/borosbence2/himat/actions/workflows/ci.yml/badge.svg)
+
 Prototype reimplementation of **HiMat: DiT-based Ultra-High Resolution SVBRDF
 Generation** (Wang et al., Eurographics 2026), scoped down to a **1024×1024,
 text→SVBRDF** generator. See [MILESTONES.md](MILESTONES.md) for the full plan.
+When you have an RTX 4090 box, follow [RUNBOOK_4090.md](RUNBOOK_4090.md) to take
+the code from "written" to "trained model".
 
 Goal of the prototype: a trained model that turns a text prompt into a 5-map
 SVBRDF (albedo, normal, roughness, metallic, height) on a local GPU, good
@@ -55,3 +59,18 @@ src/himat/
 scripts/               # CLI entrypoints
 tests/                 # CPU-only unit tests
 ```
+
+## Testing
+
+CPU-only, no GPU or dataset needed. `conftest.py` puts `src/` on the path, so
+after `pip install pytest torch numpy safetensors`:
+
+```bash
+pytest -q          # 58 pass; 5 preproc image tests skip unless the torch/numpy
+                   # bridge is healthy (they run in CI and on the 4090 box)
+ruff check .
+```
+
+CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs ruff + pytest on
+every push with a CPU torch build — it deliberately skips the heavy model stack,
+which only the 4090 box installs.

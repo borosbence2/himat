@@ -11,7 +11,6 @@ injection) + DC-AE decoder. Frozen: Sana base weights, Gemma, DC-AE encoder.
 
 from __future__ import annotations
 
-import copy
 from pathlib import Path
 
 import torch

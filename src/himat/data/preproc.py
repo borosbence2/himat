@@ -33,7 +33,6 @@ def _to_float_chw(img: Image.Image, channels: int, size: int) -> torch.Tensor:
     if img.size != (size, size):
         img = img.resize((size, size), Image.Resampling.BICUBIC)
 
-    mode = img.mode
     arr = np.asarray(img)
 
     if arr.dtype == np.uint8:
