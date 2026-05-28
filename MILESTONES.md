@@ -204,6 +204,17 @@ wrapper already falls back to tuple indexing if they differ.
 
 ## Phase 2 — Linear-DiT + CrossStitch wiring
 
+**Status (authoring box): code complete, plumbing unit-tested (13 tests).** Built:
+`models/crossstitch.py` (dual-branch module + token routing — shape, identity-at-init,
+cross-map coupling, gradients all verified against fakes), `models/dit.py`
+(`BlockWithCrossStitch` wrapper + `inject_crossstitch` + Sana loader + LoRA helper —
+block-wrapping verified with a fake transformer), `models/text_encoder.py` (frozen
+Gemma wrapper), `models/himat.py` (M-axis fold + text-repeat verified via a fake
+denoiser; `build_himat` factory). **Remaining (4090 box): the §4 CONFIRM block in
+RUNBOOK_4090.md** — Sana's real block-attr, channel dim, LoRA target names, forward
+signature, and a zero-init forward-parity smoke. This is the project's highest-risk
+step; CrossStitch is a prose-only interpretation to validate by ablation.
+
 **Deliverable:** a HiMat model object that produces correctly shaped output and, with CrossStitch outputs zeroed (initial state), behaves identically to vanilla Sana on RGB inputs. Forward + backward pass on a synthetic batch succeeds end-to-end.
 
 ### Tasks
@@ -249,6 +260,13 @@ wrapper already falls back to tuple indexing if they differ.
 
 ## Phase 3 — Training loop
 
+**Status (authoring box): code complete; flow-matching math unit-tested (7 tests,
+incl. oracle→zero-loss).** Built: `train/flow_matching.py` (rectified-flow velocity
+loss + logit-normal t sampling + add_noise — verified), `train/himat_finetune.py`
+(staged loop: LoRA+CrossStitch+decoder param groups, EMA, cosine LR, val sampling,
+checkpoint), `scripts/train_himat.py`. The loop itself is **untested** (needs the
+models) — runs on the 4090 box per RUNBOOK §5 (Stage A smoke → Stage B main).
+
 **Deliverable:** a HiMat checkpoint that, when sampled from a held-out prompt, produces recognisable, on-topic SVBRDFs ("dark cracked leather", "polished marble", "rusty metal mesh"). Quality target: comparable to ReflectanceFusion or MatFuse — *not* full paper-quality, which used multi-GPU training.
 
 ### Tasks
@@ -292,6 +310,12 @@ wrapper already falls back to tuple indexing if they differ.
 ---
 
 ## Phase 4 — Eval + sample gallery
+
+**Status (authoring box): code complete (untested — needs the trained model).**
+Built: `inference/pipeline.py` (rectified-flow Euler sampler + CFG, decode_scaled,
+save PNGs), `scripts/sample.py`, `scripts/gallery.py`, `eval/clipscore.py`
+(open_clip; albedo proxy until forfun-graphics rendering is wired). Runs on the
+4090 box per RUNBOOK §6.
 
 **Deliverable:** `scripts/sample.py "your prompt"` produces a 5-map SVBRDF saved as PNGs; a generated gallery of ~50 prompts for review; metric numbers logged.
 
